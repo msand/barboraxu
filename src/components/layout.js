@@ -1,46 +1,15 @@
-import React from 'react'
-import PropTypes from 'prop-types'
-import { Link } from 'gatsby'
-import { StaticQuery, graphql } from "gatsby"
-import { HelmetDatoCms } from 'gatsby-source-datocms'
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { Link } from "gatsby";
+import { StaticQuery, graphql } from "gatsby";
+import { HelmetDatoCms } from "gatsby-source-datocms";
 
-import '../styles/index.sass'
+import "../styles/index.sass";
 
-const TemplateWrapper = ({ children }) => (
-  <StaticQuery query={graphql`
-    query LayoutQuery
-    {
-      datoCmsSite {
-        globalSeo {
-          siteName
-        }
-        faviconMetaTags {
-          ...GatsbyDatoCmsFaviconMetaTags
-        }
-      }
-      datoCmsHome {
-        seoMetaTags {
-          ...GatsbyDatoCmsSeoMetaTags
-        }
-        introTextNode {
-          childMarkdownRemark {
-            html
-          }
-        }
-        copyright
-      }
-      allDatoCmsSocialProfile(sort: { fields: [position], order: ASC }) {
-        edges {
-          node {
-            profileType
-            url
-          }
-        }
-      }
-    }
-  `}
-  render={data => (
-    <div className="container">
+function Layout({ data, children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  return (
+    <div className={"container" + (sidebarOpen ? " is-open" : "")}>
       <HelmetDatoCms
         favicon={data.datoCmsSite.faviconMetaTags}
         seo={data.datoCmsHome.seoMetaTags}
@@ -53,7 +22,7 @@ const TemplateWrapper = ({ children }) => (
           <div
             className="sidebar__intro"
             dangerouslySetInnerHTML={{
-              __html: data.datoCmsHome.introTextNode.childMarkdownRemark.html,
+              __html: data.datoCmsHome.introTextNode.childMarkdownRemark.html
             }}
           />
           <ul className="sidebar__menu">
@@ -71,7 +40,9 @@ const TemplateWrapper = ({ children }) => (
                 href={profile.url}
                 target="blank"
                 className={`social social--${profile.profileType.toLowerCase()}`}
-              > </a>
+              >
+                {" "}
+              </a>
             ))}
           </p>
           <div className="sidebar__copyright">{data.datoCmsHome.copyright}</div>
@@ -81,7 +52,11 @@ const TemplateWrapper = ({ children }) => (
         <div className="container__mobile-header">
           <div className="mobile-header">
             <div className="mobile-header__menu">
-              <Link to="#" data-js="toggleSidebar" />
+              <Link
+                to="#"
+                data-js="toggleSidebar"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              />
             </div>
             <div className="mobile-header__logo">
               <Link to="/">{data.datoCmsSite.globalSeo.siteName}</Link>
@@ -91,12 +66,50 @@ const TemplateWrapper = ({ children }) => (
         {children}
       </div>
     </div>
-    )}
-  />
-)
-
-TemplateWrapper.propTypes = {
-  children: PropTypes.object,
+  );
 }
 
-export default TemplateWrapper
+const TemplateWrapper = ({ children }) => (
+  <StaticQuery
+    query={graphql`
+      query LayoutQuery {
+        datoCmsSite {
+          globalSeo {
+            siteName
+          }
+          faviconMetaTags {
+            ...GatsbyDatoCmsFaviconMetaTags
+          }
+        }
+        datoCmsHome {
+          seoMetaTags {
+            ...GatsbyDatoCmsSeoMetaTags
+          }
+          introTextNode {
+            childMarkdownRemark {
+              html
+            }
+          }
+          copyright
+        }
+        allDatoCmsSocialProfile(sort: { fields: [position], order: ASC }) {
+          edges {
+            node {
+              profileType
+              url
+            }
+          }
+        }
+      }
+    `}
+    render={data => {
+      return <Layout {...{ data, children }} />;
+    }}
+  />
+);
+
+TemplateWrapper.propTypes = {
+  children: PropTypes.object
+};
+
+export default TemplateWrapper;
